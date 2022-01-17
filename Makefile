@@ -4,11 +4,11 @@ OPTION ?=  -L . -m 32 -rtc base=localtime -vga std -drive
 init :
 	brew install qemu nasm
 
-helloos/helloos.img :
-	nasm helloos/helloos.asm -o helloos/helloos.img
+helloos/helloos.bin : helloos/helloos.asm Makefile
+	nasm helloos/helloos.asm -o helloos/helloos.bin -l helloos/helloos.txt
 
-boot-helloos : helloos/helloos.img
-	$(QEMU) $(OPTION) file=helloos/helloos.img,index=0,if=floppy,format=raw
+boot-helloos : helloos/helloos.asm helloos/helloos.bin Makefile
+	$(QEMU) $(OPTION) file=helloos/helloos.bin,index=0,if=floppy,format=raw
 
 hosonos/hosonos.bin : hosonos/hosonos.asm Makefile
 	nasm hosonos/hosonos.asm -o hosonos/hosonos.bin -l hosonos/hosonos.txt
