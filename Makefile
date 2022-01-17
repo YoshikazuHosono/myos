@@ -10,8 +10,8 @@ helloos/helloos.img :
 boot-helloos : helloos/helloos.img
 	$(QEMU) $(OPTION) file=helloos/helloos.img,index=0,if=floppy,format=raw
 
-hosonos/hosonos.img :
-	nasm hosonos/hosonos.asm -o hosonos/hosonos.img
+hosonos/hosonos.bin : hosonos/hosonos.asm Makefile
+	nasm hosonos/hosonos.asm -o hosonos/hosonos.bin -l hosonos/hosonos.txt
 
-boot-hosonos : hosonos/hosonos.img
-	$(QEMU) $(OPTION) file=hosonos/hosonos.img,index=0,if=floppy,format=raw
+boot-hosonos : hosonos/hosonos.asm hosonos/hosonos.bin Makefile
+	$(QEMU) $(OPTION) file=hosonos/hosonos.bin,index=0,if=floppy,format=raw
