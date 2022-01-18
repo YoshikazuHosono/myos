@@ -1,10 +1,10 @@
 ; haribote-ipl
 ; TAB=4
 
+CYLS	EQU		10				; どこまで読み込むか
 		ORG		0x7c00			; このプログラムがどこに読み込まれるのか
 
 ; 以下は標準的なFAT12フォーマットフロッピーディスクのための記述
-
 		JMP		entry
 		DB		0x90
 		DB		"HARIBOTE"		; ブートセクタの名前を自由に書いてよい（8バイト）
@@ -63,6 +63,14 @@ next:
 		ADD		CL,1			; CLに1を足す
 		CMP		CL,18			; CLと18を比較
 		JBE		readloop		; CL <= 18 だったらreadloopへ
+		MOV		CL,1
+		ADD		DH,1
+		CMP		DH,2
+		JB		readloop		; DH < 2 だったらreadloopへ
+		MOV		DH,0
+		ADD		CH,1
+		CMP		CH,CYLS
+		JB		readloop		; CH < CYLS だったらreadloopへ
 
 ; 読み終わったけどとりあえずやることないので寝る
 fin:
