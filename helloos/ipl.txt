@@ -53,7 +53,7 @@
     51 00000073 7310                    		JNC		next			; エラーがおきなければnextへ
     52 00000075 83C601                  		ADD		SI,1			; SIに1を足す
     53 00000078 83FE05                  		CMP		SI,5			; SIと5を比較
-    54 0000007B 732E                    		JAE		error			; SI >= 5 だったらerrorへ
+    54 0000007B 7331                    		JAE		error			; SI >= 5 だったらerrorへ
     55 0000007D B400                    		MOV		AH,0x00
     56 0000007F B200                    		MOV		DL,0x00			; Aドライブ
     57 00000081 CD13                    		INT		0x13			; ドライブのリセット
@@ -73,31 +73,31 @@
     71 000000A0 80C501                  		ADD		CH,1
     72 000000A3 80FD0A                  		CMP		CH,CYLS
     73 000000A6 72BD                    		JB		readloop		; CH < CYLS だったらreadloopへ
-    74                                  
-    75                                  ; 読み終わったけどとりあえずやることないので寝る
+    74 000000A8 E9(00C2)                		JMP		0xc200			; 読み終わったのでharibote.sysを実行だ！
+    75                                  
     76                                  fin:
-    77 000000A8 F4                      		HLT						; 何かあるまでCPUを停止させる
-    78 000000A9 EBFD                    		JMP		fin				; 無限ループ
+    77 000000AB F4                      		HLT						; 何かあるまでCPUを停止させる
+    78 000000AC EBFD                    		JMP		fin				; 無限ループ
     79                                  
     80                                  error:
-    81 000000AB BE[C000]                		MOV		SI,msg
+    81 000000AE BE[C300]                		MOV		SI,msg
     82                                  
     83                                  putloop:
-    84 000000AE 8A04                    		MOV		AL,[SI]
-    85 000000B0 83C601                  		ADD		SI,1			; SIに1を足す
-    86 000000B3 3C00                    		CMP		AL,0
-    87 000000B5 74F1                    		JE		fin
-    88 000000B7 B40E                    		MOV		AH,0x0e			; 一文字表示ファンクション
-    89 000000B9 BB0F00                  		MOV		BX,15			; カラーコード
-    90 000000BC CD10                    		INT		0x10			; ビデオBIOS呼び出し
-    91 000000BE EBEE                    		JMP		putloop
+    84 000000B1 8A04                    		MOV		AL,[SI]
+    85 000000B3 83C601                  		ADD		SI,1			; SIに1を足す
+    86 000000B6 3C00                    		CMP		AL,0
+    87 000000B8 74F1                    		JE		fin
+    88 000000BA B40E                    		MOV		AH,0x0e			; 一文字表示ファンクション
+    89 000000BC BB0F00                  		MOV		BX,15			; カラーコード
+    90 000000BF CD10                    		INT		0x10			; ビデオBIOS呼び出し
+    91 000000C1 EBEE                    		JMP		putloop
     92                                  
     93                                  msg:
-    94 000000C0 0A0A                    		DB		0x0a, 0x0a		; 改行を2つ
-    95 000000C2 6C6F6164206572726F-     		DB		"load error"
-    95 000000CB 72                 
-    96 000000CC 0A                      		DB		0x0a			; 改行
-    97 000000CD 00                      		DB		0
-    98 000000CE <res 130h>              		RESB	0x1fe-($-$$)	; 0x001feまでを0x00で埋める命令
+    94 000000C3 0A0A                    		DB		0x0a, 0x0a		; 改行を2つ
+    95 000000C5 6C6F6164206572726F-     		DB		"load error"
+    95 000000CE 72                 
+    96 000000CF 0A                      		DB		0x0a			; 改行
+    97 000000D0 00                      		DB		0
+    98 000000D1 <res 12Dh>              		RESB	0x1fe-($-$$)	; 0x001feまでを0x00で埋める命令
     98          ******************       warning: uninitialized space declared in .text section: zeroing [-w+zeroing]
     99 000001FE 55AA                    		DB		0x55, 0xaa
