@@ -14,3 +14,10 @@ haribote.img : ipl.bin haribote.sys Makefile
 run :
 	make haribote.img
 	$(QEMU) $(OPTION) file=haribote.img,index=0,if=floppy,format=raw
+
+clean :
+	rm -rf ipl.bin
+	rm -rf ipl.txt
+	rm -rf haribote.sys
+	rm -rf haribote.txt
+	rm -rf haribote.img
