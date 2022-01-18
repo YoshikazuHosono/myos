@@ -42,7 +42,7 @@
     40 0000005F B500                    		MOV		CH,0			; シリンダ0
     41 00000061 B600                    		MOV		DH,0			; ヘッド0
     42 00000063 B102                    		MOV		CL,2			; セクタ2
-    43                                  
+    43                                  readloop:
     44 00000065 BE0000                  		MOV		SI,0			; 失敗回数を数えるレジスタ
     45                                  retry:
     46 00000068 B402                    		MOV		AH,0x02			; AH=0x02 : ディスク読み込み
@@ -50,39 +50,46 @@
     48 0000006C BB0000                  		MOV		BX,0
     49 0000006F B200                    		MOV		DL,0x00			; Aドライブ
     50 00000071 CD13                    		INT		0x13			; ディスクBIOS呼び出し
-    51 00000073 7310                    		JNC		fin				; エラーがおきなければfinへ
+    51 00000073 7310                    		JNC		next			; エラーがおきなければnextへ
     52 00000075 83C601                  		ADD		SI,1			; SIに1を足す
     53 00000078 83FE05                  		CMP		SI,5			; SIと5を比較
-    54 0000007B 730B                    		JAE		error			; SI >= 5 だったらerrorへ
+    54 0000007B 731A                    		JAE		error			; SI >= 5 だったらerrorへ
     55 0000007D B400                    		MOV		AH,0x00
     56 0000007F B200                    		MOV		DL,0x00			; Aドライブ
     57 00000081 CD13                    		INT		0x13			; ドライブのリセット
     58 00000083 EBE3                    		JMP		retry
-    59                                  
-    60                                  ; 読み終わったけどとりあえずやることないので寝る
-    61                                  fin:
-    62 00000085 F4                      		HLT						; 何かあるまでCPUを停止させる
-    63 00000086 EBFD                    		JMP		fin				; 無限ループ
-    64                                  
-    65                                  error:
-    66 00000088 BE[9D00]                		MOV		SI,msg
-    67                                  
-    68                                  putloop:
-    69 0000008B 8A04                    		MOV		AL,[SI]
-    70 0000008D 83C601                  		ADD		SI,1			; SIに1を足す
-    71 00000090 3C00                    		CMP		AL,0
-    72 00000092 74F1                    		JE		fin
-    73 00000094 B40E                    		MOV		AH,0x0e			; 一文字表示ファンクション
-    74 00000096 BB0F00                  		MOV		BX,15			; カラーコード
-    75 00000099 CD10                    		INT		0x10			; ビデオBIOS呼び出し
-    76 0000009B EBEE                    		JMP		putloop
-    77                                  
-    78                                  msg:
-    79 0000009D 0A0A                    		DB		0x0a, 0x0a		; 改行を2つ
-    80 0000009F 6C6F6164206572726F-     		DB		"load error"
-    80 000000A8 72                 
-    81 000000A9 0A                      		DB		0x0a			; 改行
-    82 000000AA 00                      		DB		0
-    83 000000AB <res 153h>              		RESB	0x1fe-($-$$)	; 0x001feまでを0x00で埋める命令
-    83          ******************       warning: uninitialized space declared in .text section: zeroing [-w+zeroing]
-    84 000001FE 55AA                    		DB		0x55, 0xaa
+    59                                  next:
+    60 00000085 8CC0                    		MOV		AX,ES			; アドレスを0x200進める
+    61 00000087 83C020                  		ADD		AX,0x0020
+    62 0000008A 8EC0                    		MOV		ES,AX			; ADD ES,0x020 という命令がないのでこうしている
+    63 0000008C 80C101                  		ADD		CL,1			; CLに1を足す
+    64 0000008F 80F912                  		CMP		CL,18			; CLと18を比較
+    65 00000092 76D1                    		JBE		readloop		; CL <= 18 だったらreadloopへ
+    66                                  
+    67                                  ; 読み終わったけどとりあえずやることないので寝る
+    68                                  fin:
+    69 00000094 F4                      		HLT						; 何かあるまでCPUを停止させる
+    70 00000095 EBFD                    		JMP		fin				; 無限ループ
+    71                                  
+    72                                  error:
+    73 00000097 BE[AC00]                		MOV		SI,msg
+    74                                  
+    75                                  putloop:
+    76 0000009A 8A04                    		MOV		AL,[SI]
+    77 0000009C 83C601                  		ADD		SI,1			; SIに1を足す
+    78 0000009F 3C00                    		CMP		AL,0
+    79 000000A1 74F1                    		JE		fin
+    80 000000A3 B40E                    		MOV		AH,0x0e			; 一文字表示ファンクション
+    81 000000A5 BB0F00                  		MOV		BX,15			; カラーコード
+    82 000000A8 CD10                    		INT		0x10			; ビデオBIOS呼び出し
+    83 000000AA EBEE                    		JMP		putloop
+    84                                  
+    85                                  msg:
+    86 000000AC 0A0A                    		DB		0x0a, 0x0a		; 改行を2つ
+    87 000000AE 6C6F6164206572726F-     		DB		"load error"
+    87 000000B7 72                 
+    88 000000B8 0A                      		DB		0x0a			; 改行
+    89 000000B9 00                      		DB		0
+    90 000000BA <res 144h>              		RESB	0x1fe-($-$$)	; 0x001feまでを0x00で埋める命令
+    90          ******************       warning: uninitialized space declared in .text section: zeroing [-w+zeroing]
+    91 000001FE 55AA                    		DB		0x55, 0xaa
